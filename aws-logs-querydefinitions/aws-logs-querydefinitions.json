@@ -11,7 +11,7 @@
         }
     },
     "properties": {
-        "QueryName": {
+        "Name": {
             "description": "A name for the saved query definition",
             "type": "string",
             "pattern": "^([^:*\\/]+\\/?)*[^:*\\/]+$",
@@ -41,7 +41,7 @@
     },
     "additionalProperties": false,
     "required": [
-        "QueryName",
+        "Name",
         "QueryString"
     ],
     "readOnlyProperties": [

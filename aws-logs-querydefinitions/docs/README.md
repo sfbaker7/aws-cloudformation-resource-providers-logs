@@ -12,7 +12,7 @@ To declare this entity in your AWS CloudFormation template, use the following sy
 {
     "Type" : "AWS::Logs::QueryDefinitions",
     "Properties" : {
-        "<a href="#queryname" title="QueryName">QueryName</a>" : <i>String</i>,
+        "<a href="#name" title="Name">Name</a>" : <i>String</i>,
         "<a href="#querystring" title="QueryString">QueryString</a>" : <i>String</i>,
     }
 }
@@ -23,13 +23,13 @@ To declare this entity in your AWS CloudFormation template, use the following sy
 <pre>
 Type: AWS::Logs::QueryDefinitions
 Properties:
-    <a href="#queryname" title="QueryName">QueryName</a>: <i>String</i>
+    <a href="#name" title="Name">Name</a>: <i>String</i>
     <a href="#querystring" title="QueryString">QueryString</a>: <i>String</i>
 </pre>
 
 ## Properties
 
-#### QueryName
+#### Name
 
 A name for the saved query definition
 
