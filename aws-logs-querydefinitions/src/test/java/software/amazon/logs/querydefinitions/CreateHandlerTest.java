@@ -1,7 +1,6 @@
 package software.amazon.logs.querydefinitions;
 
 import com.google.common.collect.ImmutableList;
-import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 import software.amazon.awssdk.services.cloudwatchlogs.model.InvalidParameterException;
 import software.amazon.awssdk.services.cloudwatchlogs.model.PutQueryDefinitionResponse;
@@ -22,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateHandlerTest {
