@@ -33,8 +33,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             throw new CfnServiceInternalErrorException(ResourceModel.TYPE_NAME, e);
         }
 
-        final String updateMessage = String.format("%s [%s] successfully updated.", ResourceModel.TYPE_NAME, model.getName());
-        logger.log(updateMessage);
+        logger.log(String.format("%s [%s] successfully updated.", ResourceModel.TYPE_NAME, model.getName()));
 
 
         return ProgressEvent.<ResourceModel, CallbackContext>builder()

@@ -1,13 +1,7 @@
 package software.amazon.logs.querydefinitions;
 
 import org.mockito.ArgumentMatchers;
-import software.amazon.awssdk.services.cloudwatchlogs.model.InvalidParameterException;
 import software.amazon.awssdk.services.cloudwatchlogs.model.PutQueryDefinitionResponse;
-import software.amazon.awssdk.services.cloudwatchlogs.model.ResourceNotFoundException;
-import software.amazon.awssdk.services.cloudwatchlogs.model.ServiceUnavailableException;
-import software.amazon.cloudformation.exceptions.CfnInvalidRequestException;
-import software.amazon.cloudformation.exceptions.CfnNotFoundException;
-import software.amazon.cloudformation.exceptions.CfnServiceInternalErrorException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
@@ -20,15 +14,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 public class UpdateHandlerTest {
     private static final String MOCK_QUERYDEF_ID = "someId";
-    private static final String MOCK_ERROR = "someError";
     private UpdateHandler handler;
 
     @Mock
@@ -75,47 +66,16 @@ public class UpdateHandlerTest {
 
     @Test
     public void handleRequest_InvalidParameter() {
-
-        final ResourceModel model = ResourceModel.builder().queryDefinitionId(MOCK_QUERYDEF_ID).build();
-        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-                .desiredResourceState(model)
-                .build();
-
-        doThrow(InvalidParameterException.builder().message(MOCK_ERROR).build())
-                .when(proxy)
-                .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
-
-
-        assertThrows(CfnInvalidRequestException.class, () -> handler.handleRequest(proxy, request, null, logger));
+        BaseTests.handleRequest_InvalidParameter(proxy, handler, logger);
     }
 
     @Test
     public void handleRequest_ResourceNotFound() {
-
-        final ResourceModel model = ResourceModel.builder().queryDefinitionId(MOCK_QUERYDEF_ID).build();
-        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-                .desiredResourceState(model)
-                .build();
-
-        doThrow(ResourceNotFoundException.builder().message(MOCK_ERROR).build())
-                .when(proxy)
-                .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
-
-
-        assertThrows(CfnNotFoundException.class, () -> handler.handleRequest(proxy, request, null, logger));
+        BaseTests.handleRequest_ResourceNotFound(proxy, handler, logger);
     }
 
     @Test
     public void handleRequest_ServiceUnavailable() {
-        final ResourceModel model = ResourceModel.builder().queryDefinitionId(MOCK_QUERYDEF_ID).build();
-        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-                .desiredResourceState(model)
-                .build();
-
-        doThrow(ServiceUnavailableException.builder().message(MOCK_ERROR).build())
-                .when(proxy)
-                .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
-
-        assertThrows(CfnServiceInternalErrorException.class, () -> handler.handleRequest(proxy, request, null, logger));
+        BaseTests.handleRequest_ServiceUnavailable(proxy, handler, logger);
     }
 }

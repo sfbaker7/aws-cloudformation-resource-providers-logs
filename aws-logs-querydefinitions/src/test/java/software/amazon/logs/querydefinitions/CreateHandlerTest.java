@@ -2,9 +2,7 @@ package software.amazon.logs.querydefinitions;
 
 import com.google.common.collect.ImmutableList;
 import org.mockito.ArgumentMatchers;
-import software.amazon.awssdk.services.cloudwatchlogs.model.InvalidParameterException;
 import software.amazon.awssdk.services.cloudwatchlogs.model.PutQueryDefinitionResponse;
-import software.amazon.cloudformation.exceptions.CfnInvalidRequestException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
@@ -17,14 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateHandlerTest {
     private static final String MOCK_QUERYDEF_ID = "someId";
+    private CreateHandler handler;
 
     @Mock
     private AmazonWebServicesClientProxy proxy;
@@ -52,6 +49,7 @@ public class CreateHandlerTest {
         putQueryDefinitionResponse = PutQueryDefinitionResponse.builder()
                 .queryDefinitionId(MOCK_QUERYDEF_ID)
                 .build();
+        handler = new CreateHandler();
     }
 
 
@@ -90,18 +88,16 @@ public class CreateHandlerTest {
 
     @Test
     public void handleRequest_Failure_InvalidRequest() {
-        final CreateHandler handler = new CreateHandler();
+        BaseTests.handleRequest_InvalidParameter(proxy, handler, logger);
+    }
 
-        ResourceModel model = ResourceModel.builder().queryString("filter @message like /ERROR/").build();
-        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-                .desiredResourceState(model)
-                .build();
+    @Test
+    public void handleRequest_ResourceNotFound() {
+        BaseTests.handleRequest_ResourceNotFound(proxy, handler, logger);
+    }
 
-        doThrow(InvalidParameterException.builder().message("test Error").build())
-                .when(proxy)
-                .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
-
-        assertThrows(CfnInvalidRequestException.class,
-                () -> handler.handleRequest(proxy, request, null, logger));
+    @Test
+    public void handleRequest_ServiceUnavailable() {
+        BaseTests.handleRequest_ServiceUnavailable(proxy, handler, logger);
     }
 }

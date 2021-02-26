@@ -36,12 +36,17 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
             throw new CfnServiceInternalErrorException(ResourceModel.TYPE_NAME, ex);
         }
         OperationStatus status = deleteQueryDefinitionResponse.success() ? OperationStatus.SUCCESS : OperationStatus.FAILED;
-        final String message = String.format("%s [%s] successfully deleted.", ResourceModel.TYPE_NAME, model.getName());
-        logger.log(message);
+        logger.log(String.format("%s [%s] deletion finished with status %s", ResourceModel.TYPE_NAME, model.getName(), status.toString()));
 
-        return ProgressEvent.<ResourceModel, CallbackContext>builder()
-            .resourceModel(model)
-            .status(status)
-            .build();
+        ProgressEvent<ResourceModel, CallbackContext> progressEvent = ProgressEvent.<ResourceModel, CallbackContext>builder()
+                .resourceModel(model)
+                .status(status)
+                .build();
+
+        if (!deleteQueryDefinitionResponse.success()) {
+            progressEvent.setMessage("The query definition failed to delete for some unknown reason, please try again later");
+        }
+
+        return progressEvent;
     }
 }

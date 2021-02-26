@@ -2,7 +2,11 @@ package software.amazon.logs.querydefinitions;
 
 import software.amazon.awssdk.services.cloudwatchlogs.model.InvalidParameterException;
 import software.amazon.awssdk.services.cloudwatchlogs.model.PutQueryDefinitionResponse;
+import software.amazon.awssdk.services.cloudwatchlogs.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.cloudwatchlogs.model.ServiceUnavailableException;
 import software.amazon.cloudformation.exceptions.CfnInvalidRequestException;
+import software.amazon.cloudformation.exceptions.CfnNotFoundException;
+import software.amazon.cloudformation.exceptions.CfnServiceInternalErrorException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
@@ -24,11 +28,15 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
             putQueryDefinitionResponse = proxy.injectCredentialsAndInvokeV2(Translator.translateToCreateRequest(model), ClientBuilder.getLogsClient()::putQueryDefinition);
         } catch (InvalidParameterException ex) {
             throw new CfnInvalidRequestException(ResourceModel.TYPE_NAME, ex);
+        } catch (ResourceNotFoundException ex) {
+            throw new CfnNotFoundException(ResourceModel.TYPE_NAME, model.getPrimaryIdentifier().toString());
+        } catch (ServiceUnavailableException ex) {
+            throw new CfnServiceInternalErrorException(ResourceModel.TYPE_NAME, ex);
         }
 
         model.setQueryDefinitionId(putQueryDefinitionResponse.queryDefinitionId());
-        final String createMessage = String.format("%s [%s] successfully created.", ResourceModel.TYPE_NAME, model.getName());
-        logger.log(createMessage);
+
+        logger.log(String.format("%s [%s] successfully created.", ResourceModel.TYPE_NAME, model.getName()));
 
         return ProgressEvent.<ResourceModel, CallbackContext>builder()
             .resourceModel(model)

@@ -3,11 +3,7 @@ package software.amazon.logs.querydefinitions;
 import com.google.common.collect.ImmutableList;
 import org.mockito.ArgumentMatchers;
 import software.amazon.awssdk.services.cloudwatchlogs.model.DescribeQueryDefinitionsResponse;
-import software.amazon.awssdk.services.cloudwatchlogs.model.InvalidParameterException;
 import software.amazon.awssdk.services.cloudwatchlogs.model.QueryDefinition;
-import software.amazon.awssdk.services.cloudwatchlogs.model.ServiceUnavailableException;
-import software.amazon.cloudformation.exceptions.CfnInvalidRequestException;
-import software.amazon.cloudformation.exceptions.CfnServiceInternalErrorException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
@@ -20,15 +16,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class ListHandlerTest {
     ListHandler handler;
-    private static final String MOCK_ERROR = "someError";
 
     @Mock
     private AmazonWebServicesClientProxy proxy;
@@ -69,34 +64,43 @@ public class ListHandlerTest {
     }
 
     @Test
-    public void handleRequest_InvalidParameter() {
-
+    public void handleNextTokenNotNull() {
+        DescribeQueryDefinitionsResponse describeQueryDefinitionsResponse1 = DescribeQueryDefinitionsResponse.builder()
+                .queryDefinitions(ImmutableList.of(QueryDefinition.builder().build())).nextToken("SOME_TOKEN").build();
+        DescribeQueryDefinitionsResponse describeQueryDefinitionsResponse2 = DescribeQueryDefinitionsResponse.builder()
+                .queryDefinitions(ImmutableList.of(QueryDefinition.builder().build())).build();
         final ResourceModel model = ResourceModel.builder().build();
+        doReturn(describeQueryDefinitionsResponse1, describeQueryDefinitionsResponse2)
+                .when(proxy)
+                .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
+
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
 
-        doThrow(InvalidParameterException.builder().message(MOCK_ERROR).build())
-                .when(proxy)
-                .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
+        final ProgressEvent<ResourceModel, CallbackContext> response =
+                handler.handleRequest(proxy, request, null, logger);
+
+        verify(proxy, atLeast(2)).injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
+        assertThat(response.getCallbackContext()).isNull();
+        assertThat(response.getCallbackDelaySeconds()).isEqualTo(0);
+        assertThat(response.getResourceModel()).isNull();
+        assertThat(response.getResourceModels()).isNotNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+    }
 
 
-        assertThrows(CfnInvalidRequestException.class,
-                () -> handler.handleRequest(proxy, request, null, logger));
+    @Test
+    public void handleRequest_InvalidParameter() {
+        BaseTests.handleRequest_InvalidParameter(proxy, handler, logger);
     }
 
     @Test
     public void handleRequest_ServiceUnavailable() {
-        final ResourceModel model = ResourceModel.builder().build();
-        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-                .desiredResourceState(model)
-                .build();
-
-        doThrow(ServiceUnavailableException.builder().message(MOCK_ERROR).build())
-                .when(proxy)
-                .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
-
-        assertThrows(CfnServiceInternalErrorException.class,
-                () -> handler.handleRequest(proxy, request, null, logger));
+        BaseTests.handleRequest_ServiceUnavailable(proxy, handler, logger);
     }
 }
