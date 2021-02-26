@@ -99,7 +99,7 @@ public class DeleteHandlerTest {
     }
 
 
-        @Test
+    @Test
     public void handleRequest_InvalidParameter() {
 
         final ResourceModel model = ResourceModel.builder().queryDefinitionId(MOCK_QUERYDEF_ID).build();
@@ -112,8 +112,7 @@ public class DeleteHandlerTest {
                 .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
 
 
-        assertThrows(CfnInvalidRequestException.class,
-                () -> handler.handleRequest(proxy, request, null, logger));
+        assertThrows(CfnInvalidRequestException.class, () -> handler.handleRequest(proxy, request, null, logger));
     }
 
     @Test
@@ -143,7 +142,6 @@ public class DeleteHandlerTest {
                 .when(proxy)
                 .injectCredentialsAndInvokeV2(ArgumentMatchers.any(), ArgumentMatchers.any());
 
-        assertThrows(CfnServiceInternalErrorException.class,
-                () -> handler.handleRequest(proxy, request, null, logger));
+        assertThrows(CfnServiceInternalErrorException.class, () -> handler.handleRequest(proxy, request, null, logger));
     }
 }
